@@ -1,0 +1,26 @@
+#!/bin/sh
+
+if [ -n "$(git status --porcelain --untracked-files=no)" ]; then
+    DIRTY="-dirty"
+fi
+
+COMMIT=$(git rev-parse --short HEAD)
+GIT_TAG=${DRONE_TAG:-$(git tag -l --contains HEAD | head -n 1)}
+
+if [ -n "$GIT_TAG" ]; then
+    VERSION=$GIT_TAG
+else
+    VERSION="${COMMIT}${DIRTY}"
+fi
+
+ARCH=${ARCH:-"loong64"}
+TAG=${TAG:-${VERSION}-${ARCH}}
+REPO=${REPO:-rancher}
+
+if echo $TAG | grep -q dirty; then
+    TAG=dev
+fi
+
+IMAGE=lcr.loongnix.cn/${REPO}/klipper-lb:${TAG}
+
+
